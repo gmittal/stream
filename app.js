@@ -27,7 +27,6 @@ app.use(bodyParser());
 app.use(express.static(__dirname + '/tmp'));
 
 require('shelljs/global');
-require('./shelljs/shell.js')
 
 
 
