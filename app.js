@@ -9,6 +9,16 @@ var async = require('async');
 var Firebase = require('firebase');
 var http = require('http');
 var qr = require('qr-image');  
+var easyimg = require('easyimage');
+var GIFEncoder = require('gifencoder');
+var Canvas = require('canvas');
+var fs = require('fs');
+
+var encoder = new GIFEncoder(298, 298);
+// stream the results as they are available into myanimated.gif
+//encoder.createReadStream().pipe(fs.createWriteStream('myanimated.gif'));
+
+
 
 var db = new Firebase('https://hgy-sms-jmjypwax.firebaseio.com/');
 
@@ -22,6 +32,8 @@ require('./shelljs/shell.js')
 
 
 app.post('/incoming', function (req, res) {
+  console.log(req.body.From);
+
   searchYT(req.body.Body, function(url, time) {
 
         console.log(url);
@@ -38,9 +50,9 @@ app.post('/incoming', function (req, res) {
 
 			// convert image to base64 encoded string
 			var base64str = base64_encode(file_name+".mp4");
-			console.log(base64str);
+		//	console.log(base64str);
 
-			  generateQRs(base64str);
+			  generateQRs(base64str, req.body.From);
 
   });
 
@@ -50,16 +62,16 @@ app.post('/incoming', function (req, res) {
 
 function searchYT(query, cb) {
   superagent
-    .get('http://partysyncwith.me:3005/search/'+ query +'/1')
+    .get('http://partysyncwith.me:3005/id/'+query)
     .end(function(err, res) {
       if(err) {
         console.log(err);
       } else {
 
         if (typeof JSON.parse(res.text).data !== 'undefined') {
-          if (JSON.parse(res.text).data[0].duration < 600) {
-            var url = JSON.parse(res.text).data[0].video_url;
-            var time = JSON.parse(res.text).data[0].duration;
+          if (JSON.parse(res.text).data.duration < 600) {
+            var url = JSON.parse(res.text).data.video_url;
+            var time = JSON.parse(res.text).data.duration;
             // console.log(url);
             cb(url, time);
           } else {
@@ -71,7 +83,7 @@ function searchYT(query, cb) {
   }
 
 
-function generateQRs(b64) {
+function generateQRs(b64, phone_number) {
 	var UID = db.push().key();
 
 	var strings = [];
@@ -83,7 +95,7 @@ function generateQRs(b64) {
 
 	// console.log()
 
-	console.log(strings.length);
+	console.log(strings.length+' QR codes need to be generated');
 
 
  /*   var code = qr.image(b64, { type: 'png' });
@@ -95,25 +107,88 @@ function generateQRs(b64) {
     var k = 0;
     loopt();
 
+    encoder.createReadStream().pipe(fs.createWriteStream(UID+"YAY.gif"));
+
+    encoder.start();
+    encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
+    encoder.setDelay(100);  // frame delay in ms
+    encoder.setQuality(10); // image quality. 10 is default.
+
+    var canvas = new Canvas(298, 298);
+    var ctx = canvas.getContext('2d');
+
     function loopt() {
 
 
-		var code = qr.image(strings[k], { type: 'png' });
+
+		var code = qr.image(strings[k], { type: 'png', size:2 });
 		var output = fs.createWriteStream(UID+k.toString()+'.png');
 
 		code.pipe(output);
 
 		code.on('end', function() {
-		    console.log(k);
-		    k++;
-		    if (k < strings.length) {
-			
-			loopt();
-		    }
+
 		    
-		});
+		    fs.readFile(__dirname + '/tmp/'+UID+k.toString()+'.png', function(err, squid){
+			if (err) throw err;
+			img = new Canvas.Image;
+			img.src = squid;
+		        ctx.drawImage(img, 0, 0, img.width, img.height);
+			encoder.addFrame(ctx);
+			
+			console.log(k);
+			k++;
+
+
+			if (k < strings.length) {
+			    loopt();
+			} else {
+			    encoder.finish();
+			    console.log("Finished downloading at "+ new Date());
+			} 
+
+		    }); // end fs readFile callback
+
+		    
+		}); // end pipe.on callback
 
     }
+
+
+/*    function buildCodes() {
+	encoder.createReadStream().pipe(fs.createWriteStream('myanimated.gif'));
+	encoder.start();
+	encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
+	encoder.setDelay(100);  // frame delay in ms
+	encoder.setQuality(10); // image quality. 10 is default.
+	
+	var canvas = new Canvas(745, 745);
+	var ctx = canvas.getContext('2d');
+
+	for (var x = 0; x < strings.length; x++) {
+	    fs.readFileSync(__dirname+"/tmp/"+UID+x.toString()+'.png', function(err, squid){
+		if (err) throw err;
+		img = new Canvas.Image;
+		img.src = squid;
+
+		console.log(x);
+		ctx.drawImage(img, 0, 0, img.width, img.height);
+		encoder.addFrame(ctx);
+	    });
+	}
+
+	encoder.finish();
+	console.log("FINISHED GENERATING GIF");
+
+
+    } */
+
+ //   buildCodes(); //execute GIF generation
+    
+
+   // console.log("YO");
+
+    
 	    
 
 	 
