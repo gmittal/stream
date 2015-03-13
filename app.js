@@ -123,12 +123,12 @@ function generateQRs(b64, phone_number) {
 //    var k = 0;
 //    loopt();
 
-    //encoder.createReadStream().pipe(fs.createWriteStream(UID+"YAY.gif"));
+    encoder.createReadStream().pipe(fs.createWriteStream(UID+"YAY.gif"));
 
-    //encoder.start();
-    //encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
-    //encoder.setDelay(100);  // frame delay in ms
-    //encoder.setQuality(10); // image quality. 10 is default.
+    encoder.start();
+    encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
+    encoder.setDelay(100);  // frame delay in ms
+    encoder.setQuality(10); // image quality. 10 is default.
 
     var canvas = new Canvas(298, 298);
     var ctx = canvas.getContext('2d');
@@ -194,9 +194,26 @@ function generateQRs(b64, phone_number) {
 		    fs.readFile(__dirname + '/tmp/'+UID+k.toString()+'.png', function(err, squid){
 			if (err) throw err;
 			img = new Canvas.Image;
+			//img.onload = function() {
+			 //   console.log(k);
+
+			   
 			img.src = squid;
-		        ctx.drawImage(img, 0, 0, img.width, img.height);
-			encoder.addFrame(ctx);
+			//img.on('load', function () {
+			    ctx.drawImage(img, 0, 0, img.width, img.height);
+			    encoder.addFrame(ctx);
+			//}); 
+
+			//ctx.drawImage(img, 0, 0, img.width, img.height);
+			//encoder.addFrame(ctx);
+
+			//}
+
+			//img.src = squid;
+			
+			//img.src = squid;
+		        //ctx.drawImage(img, 0, 0, img.width, img.height);
+			//encoder.addFrame(ctx);
 			
 			console.log(k);
 			k++;
