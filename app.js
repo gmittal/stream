@@ -13,6 +13,8 @@ var easyimg = require('easyimage');
 var GIFEncoder = require('gifencoder');
 var Canvas = require('canvas');
 var fs = require('fs');
+var pngFileStream = require('png-file-stream');
+
 
 var encoder = new GIFEncoder(298, 298);
 // stream the results as they are available into myanimated.gif
@@ -83,16 +85,31 @@ function searchYT(query, cb) {
 
 
 function generateQRs(b64, phone_number) {
+
+        // grab start time
+        var startProcessTime = new Date();
+
 	var UID = db.push().key();
 
 	var strings = [];
 	var index = 0;
 	while (index < b64.length) {
-	    strings.push(b64.substring(index, Math.min(index + 1400,b64.length)));
+	    var me_json = {};
+	    me_json["body"] = b64.substring(index, Math.min(index + 1400,b64.length));
+
+	    strings.push(me_json);
 	    index += 1400;
 	}
 
-	// console.log()
+
+        // add iterator values to the json within the strings array
+        for (var swap_i = 0; swap_i < strings.length; swap_i++) {
+	    var tmp = strings[swap_i];
+	    tmp["id"] = swap_i;
+	    strings[swap_i] = tmp;
+	}
+
+  //      console.log(strings);
 
 	console.log(strings.length+' QR codes need to be generated');
 
@@ -103,24 +120,70 @@ function generateQRs(b64, phone_number) {
 
 //   for (var k = 0; k < strings.length; k++) {
 
-    var k = 0;
-    loopt();
+//    var k = 0;
+//    loopt();
 
-    encoder.createReadStream().pipe(fs.createWriteStream(UID+"YAY.gif"));
+    //encoder.createReadStream().pipe(fs.createWriteStream(UID+"YAY.gif"));
 
-    encoder.start();
-    encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
-    encoder.setDelay(100);  // frame delay in ms
-    encoder.setQuality(10); // image quality. 10 is default.
+    //encoder.start();
+    //encoder.setRepeat(0);   // 0 for repeat, -1 for no-repeat
+    //encoder.setDelay(100);  // frame delay in ms
+    //encoder.setQuality(10); // image quality. 10 is default.
 
     var canvas = new Canvas(298, 298);
     var ctx = canvas.getContext('2d');
+
+  /*  var mygif = fs.createWriteStream(UID+'YAY.gif');
+    var yo = pngFileStream('tmp/'+UID+'?.png').pipe(encoder.createWriteStream({ repeat: 0, delay: 100, quality: 10 })).pipe(mygif); */
+
+    // CREATE THE IMAGES
+   // var mtTasks = [];
+
+ /*   for (var mtID = 0; mtID < strings.length; mtID++) {
+	mtTasks.push(function yay(callback){ console.log(mtID); });
+    } */
+
+   // mtTasks[2].yay();
+
+
+  //  async.eachSeries(strings, function(file, callback) {
+
+	// Perform operation on file here.
+	//console.log('Processing file ' + file);
+//	console.log(strings[file.id]);
+
+
+//	var code = qr.image(strings[file.id].body, { type: 'png', size:2 });
+//	var output = fs.createWriteStream(UID+(file.id)+'.png');
+//	code.pipe(output);
+	
+//	console.log('Generated IMG '+ file.id);
+
+//	callback();
+	
+  //  }, function(err){
+//	// if any of the file processing produced an error, err would equal that error
+//	if( err ) {
+//	    // One of the iterations produced an error.
+//	    // All processing will now stop.
+//	    console.log('A file failed to process');
+//	} else {
+//	    console.log('All files have been processed successfully');
+//	}
+  //  }); // end async.each
+
+    
+
+    console.log(UID);
+    
+    var k = 0;
+    loopt();
 
     function loopt() {
 
 
 
-		var code = qr.image(strings[k], { type: 'png', size:2 });
+		var code = qr.image(strings[k].body, { type: 'png', size:2 });
 		var output = fs.createWriteStream(UID+k.toString()+'.png');
 
 		code.pipe(output);
@@ -143,15 +206,24 @@ function generateQRs(b64, phone_number) {
 			    loopt();
 			} else {
 			    encoder.finish();
-			    console.log("Finished downloading at "+ new Date());
+			   // var mygif = fs.createWriteStream(UID+'YAY.gif');
+			   // var yo = pngFileStream(__dirname + '/tmp/'+UID+'?.png').pipe(encoder.createWriteStream({ repeat: 0, delay: 100, quality: 10 })).pipe(mygif);
+
+			    var endProcessTime = new Date();
+			    console.log("Finished downloading at "+ endProcessTime);
+			    console.log("Operation took "+(endProcessTime.getTime() - startProcessTime.getTime())/1000+' seconds to complete.');
+
+			    console.log(UID);
 			} 
+
+
 
 		    }); // end fs readFile callback
 
 		    
 		}); // end pipe.on callback
 
-    }
+    } 
 
 
 /*    function buildCodes() {
