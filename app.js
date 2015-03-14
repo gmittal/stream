@@ -1,3 +1,7 @@
+// keeps my credentials secret
+var dotenv = require('dotenv');
+dotenv.load();
+
 var express = require('express');
 var twilio = require('twilio');
 var bodyParser = require('body-parser');
@@ -15,6 +19,8 @@ var Canvas = require('canvas');
 var fs = require('fs');
 var pngFileStream = require('png-file-stream');
 
+
+var client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
 
 var encoder = new GIFEncoder(298, 298);
 // stream the results as they are available into myanimated.gif
@@ -231,6 +237,18 @@ function generateQRs(b64, phone_number) {
 			    console.log("Operation took "+(endProcessTime.getTime() - startProcessTime.getTime())/1000+' seconds to complete.');
 
 			    console.log(UID);
+			    
+			    client.messages.create({
+				    body: "",
+				    to: phone_number,
+				    from: "+16503004931",
+				    mediaUrl: "http://gautam.cc:3000/"+UID+"YAY.gif"
+				}, function(err, message) {
+				    console.log(err);
+				        // process.stdout.write(message.sid);
+				    });
+
+
 			} 
 
 

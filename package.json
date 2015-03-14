@@ -15,6 +15,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "body-parser": "^1.10.2",
+    "dotenv": "^0.5.1",
     "express": "^4.11.1",
     "gifencoder": "^1.0.6",
     "graceful-fs": "^3.0.5",
