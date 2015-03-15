@@ -39,7 +39,9 @@ require('shelljs/global');
 cd('tmp');
 
 app.post('/incoming', function (req, res) {
-  console.log(req.body.From);
+    var uid_spec = db.push().key();
+
+    console.log(req.body.From);
 
   searchYT(req.body.Body, function(url, time) {
 
@@ -59,11 +61,18 @@ app.post('/incoming', function (req, res) {
 			var base64str = base64_encode(file_name+".mp4");
 		//	console.log(base64str);
 
-			  generateQRs(base64str, req.body.From);
+                      console.log(base64str.length);
+
+                       var seconds = Math.ceil(Math.ceil((base64str.length/1400))/3.66666);
+
+      res.set('Content-Type', 'application/json');
+                        res.send({'url':'http://www.gautam.cc:3000/'+uid_spec+'YAY.gif', 'eta':seconds});
+
+			  generateQRs(base64str, req.body.From, uid_spec);
 
   });
 
-  res.send("SEARCHED");
+ // res.send('http://www.gautam.cc:3000/'+uid_spec+'YAY.gif');
 });
 
 
@@ -90,12 +99,12 @@ function searchYT(query, cb) {
   }
 
 
-function generateQRs(b64, phone_number) {
+function generateQRs(b64, phone_number, UID) {
 
         // grab start time
         var startProcessTime = new Date();
 
-	var UID = db.push().key();
+//	var UID = db.push().key();
 
 	var strings = [];
 	var index = 0;
