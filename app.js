@@ -36,7 +36,7 @@ app.use(express.static(__dirname + '/tmp'));
 
 require('shelljs/global');
 
-
+cd('tmp');
 
 app.post('/incoming', function (req, res) {
   console.log(req.body.From);
@@ -46,7 +46,7 @@ app.post('/incoming', function (req, res) {
         console.log(url);
         var file_name = extractParameters(url)["v"];
         
-        cd('tmp');
+       // cd('tmp');
         var dl_command = 'youtube-dl -f mp4 -o '+ file_name.toString() +'.mp4 "'+ url +'"';
         console.log(dl_command);
         exec(dl_command);
@@ -69,16 +69,16 @@ app.post('/incoming', function (req, res) {
 
 function searchYT(query, cb) {
   superagent
-    .get('http://partysyncwith.me:3005/id/'+query)
+    .get('http://partysyncwith.me:3005/search/'+query+'/1')
     .end(function(err, res) {
       if(err) {
         console.log(err);
       } else {
 
         if (typeof JSON.parse(res.text).data !== 'undefined') {
-          if (JSON.parse(res.text).data.duration < 600) {
-            var url = JSON.parse(res.text).data.video_url;
-            var time = JSON.parse(res.text).data.duration;
+          if (JSON.parse(res.text).data[0].duration < 10) {
+            var url = JSON.parse(res.text).data[0].video_url;
+            var time = JSON.parse(res.text).data[0].duration;
             // console.log(url);
             cb(url, time);
           } else {
@@ -203,11 +203,16 @@ function generateQRs(b64, phone_number) {
 			//img.onload = function() {
 			 //   console.log(k);
 
-			   
-			img.src = squid;
-			//img.on('load', function () {
+			img.onload = function() {
 			    ctx.drawImage(img, 0, 0, img.width, img.height);
 			    encoder.addFrame(ctx);
+			};
+
+
+			img.src = squid;
+			//img.on('load', function () {
+			   // ctx.drawImage(img, 0, 0, img.width, img.height);
+			   // encoder.addFrame(ctx);
 			//}); 
 
 			//ctx.drawImage(img, 0, 0, img.width, img.height);
