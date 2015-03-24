@@ -13,3 +13,5 @@ The server will respond with the URL that the GIF will be available at once it i
 
 
 Writing a frontend for this server should be fairly straightforward. Once your app receives the GIF from the server (either by making a POST request or by receiving an MMS), you can split the GIF into individual frames, parse the individual QR code frames, and then stitch the individual 1400 character chunks back together. Once you have competed the process, you can decode the base64 content to display your video. There is no frontend yet, but feel free to write your own, or modify/contribute to this code to fit your own frontend needs. If you have any questions please direct them to [gautam-AT-mittal-DOT-net](mailto:gautam@mittal.net).
+
+_**Note**: It is highly recommended that you download and build the code yourself before testing it out. Feel free to try out the API links I have given, but use at your own risk, as the public API is not meant to be used for production or even high-level development purposes._
