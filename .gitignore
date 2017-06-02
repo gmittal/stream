@@ -1,4 +1,5 @@
 node_modules
 tmp
-shelljs
+venv
 .env
+.DS_Store
