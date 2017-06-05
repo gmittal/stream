@@ -2,7 +2,19 @@ Kawa
 =======
 An offline mobile music streaming service.
 
-### Installation
+## Installation
+Clone the repo, and find your local copy.
+```
+git clone https://github.com/gmittal/stream && cd stream
+```
+
+Install the dependencies.
+```
+pip install -r requirements.txt
+```
+
+## Usage
+
 ```
 HOST=0.0.0.0
 BASE_URL=XXXXXXXX.ngrok.io
