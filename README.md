@@ -1,3 +1,3 @@
 Kawa
 =======
-Streaming 
+An offline mobile music streaming service.
