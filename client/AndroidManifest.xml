@@ -9,4 +9,8 @@
       </intent-filter>
     </activity>
   </application>
+  <uses-permission android:name="android.permission.READ_SMS"/>
+  <uses-permission android:name="android.permission.RECEIVE_MMS"/>
+  <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+  <uses-permission android:name="android.permission.SEND_SMS"/>
 </manifest>
