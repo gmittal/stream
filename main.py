@@ -1,22 +1,37 @@
 import base64, imageio, math, numpy, os, qrcode, requests, shutil, sys, uuid
 from os.path import join, dirname
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request, redirect, send_from_directory
+from twilio.twiml.messaging_response import MessagingResponse, Message
 from pydub import AudioSegment
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
+HOSTNAME = os.environ.get('HOST')
+PORT = os.environ.get('PORT')
 QR_CAPACITY = 900.
 SAMPLE_LENGTH = 5 * 1000
 
 @app.route("/incoming")
-def hello():
-    generate_gif(get_base64(download_song(search('all star'))+'.mp3'), 'all_star3')
-    return "Hello World!"
+def incoming():
+    """Respond to incoming song queries with a data GIF"""
+    f_id = download_song(search('all star'))
+    generate_gif(get_base64(fid +'.mp3'), fid)
+    delete_asset(fid +'.mp3')
 
-# Returns a 30 second preview URL given a song name
+    resp = MessagingResponse()
+    msg = Message().body('').media('http://'+ HOSTNAME +':'+ PORT +'/content/'+ fid + '.gif')
+    resp.append(msg)
+    return str(resp)
+
+# Serve static assets
+@app.route('/content/<path:path>')
+def serve_file(path):
+    return send_from_directory('tmp', path)
+
+# Returns a 30 second MP3 preview URL given a song name
 def search(query):
     try:
         trackID = requests.get('https://api.spotify.com/v1/search?q='+ query +'&type=track', headers={
@@ -46,16 +61,22 @@ def download_song(url):
         song[:SAMPLE_LENGTH].export(join(dirname(__file__), 'tmp/'+ file_id +'.mp3'), format='mp3')
     return file_id
 
+# Delete local assets
+def delete_asset(path):
+    os.remove(join(dirname(__file__), 'tmp/'+ path))
+
+# Get base64 encoding of a file
 def get_base64(path):
     with open(join(dirname(__file__), 'tmp/'+ path)) as f:
         encoded = base64.b64encode(f.read())
         return encoded
 
+# Generate GIF of QR codes
 def generate_gif(data, uid):
     images = []
     for i in range(int(math.ceil(len(data)/QR_CAPACITY))):
         raw = data[int(i*QR_CAPACITY):int((i+1)*QR_CAPACITY)]
-        encoded = raw.ljust(900)
+        encoded = raw.ljust(QR_CAPACITY)
 
         qr = qrcode.QRCode(
             version=1,
@@ -72,4 +93,4 @@ def generate_gif(data, uid):
     imageio.mimsave(join(dirname(__file__), 'tmp/'+ uid +'.gif'), images, 'GIF', **kargs)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=9000)
+    app.run(host=HOSTNAME, port=PORT)
